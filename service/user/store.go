@@ -2,6 +2,7 @@ package user
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/jiayishen21/resume-comp-backend/types"
 )
@@ -14,7 +15,7 @@ func NewStore(db *sql.DB) *Store {
 	return &Store{db: db}
 }
 
-func scanRowsIntoUser(rows *sql.Rows) (*types.User, error) {
+func scanRowIntoUser(rows *sql.Rows) (*types.User, error) {
 	user := new(types.User)
 	if err := rows.Scan(
 		&user.ID,
@@ -29,14 +30,65 @@ func scanRowsIntoUser(rows *sql.Rows) (*types.User, error) {
 	return user, nil
 }
 
-func (s *Store) GetUserByEmail(email string) (*types.User, error) {
-	return nil, nil
+func (s *Store) UserExists(id string, email string) bool {
+	rows, err := s.db.Query("SELECT * FROM users WHERE id = ? OR email = ?", id, email)
+	if err != nil {
+		return false
+	}
+
+	defer rows.Close()
+	exists := rows.Next()
+
+	return exists
 }
 
-func (s *Store) GetUserById(id int) (*types.User, error) {
-	return nil, nil
+func (s *Store) GetUserByEmail(email string) (*types.User, error) {
+	rows, err := s.db.Query("SELECT * FROM users WHERE email = ?", email)
+	if err != nil {
+		return nil, err
+	}
+
+	user := new(types.User)
+	found := false
+	for rows.Next() {
+		found = true
+		user, err = scanRowIntoUser(rows)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if !found {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	return user, nil
+}
+
+func (s *Store) GetUserById(id string) (*types.User, error) {
+	rows, err := s.db.Query("SELECT * FROM users WHERE id = ?", id)
+	if err != nil {
+		return nil, err
+	}
+
+	user := new(types.User)
+	found := false
+	for rows.Next() {
+		found = true
+		user, err = scanRowIntoUser(rows)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if !found {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	return user, nil
 }
 
 func (s *Store) CreateUser(user *types.User) error {
-	return nil
+	_, err := s.db.Exec("INSERT INTO users (id, firstName, lastName, email) VALUES (?, ?, ?, ?)", user.ID, user.FirstName, user.LastName, user.Email)
+	return err
 }
