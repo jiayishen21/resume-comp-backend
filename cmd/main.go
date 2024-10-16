@@ -24,8 +24,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println(config.Envs.DBAddress)
-	log.Println(config.Envs.DBPassword)
 	initStorage(db)
 
 	server := api.NewAPIServer(":8080", nil)
