@@ -19,8 +19,6 @@ func scanRowIntoUser(rows *sql.Rows) (*types.User, error) {
 	user := new(types.User)
 	if err := rows.Scan(
 		&user.ID,
-		&user.FirstName,
-		&user.LastName,
 		&user.Email,
 		&user.CreatedAt,
 	); err != nil {
@@ -89,6 +87,6 @@ func (s *Store) GetUserById(id string) (*types.User, error) {
 }
 
 func (s *Store) CreateUser(user *types.User) error {
-	_, err := s.db.Exec("INSERT INTO users (id, firstName, lastName, email) VALUES (?, ?, ?, ?)", user.ID, user.FirstName, user.LastName, user.Email)
+	_, err := s.db.Exec("INSERT INTO users (id, email) VALUES (?, ?)", user.ID, user.Email)
 	return err
 }

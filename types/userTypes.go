@@ -4,10 +4,18 @@ import "time"
 
 type User struct {
 	ID        string    `json:"id"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"createdAt"`
+}
+
+type Auth0UserInfo struct {
+	Sub           string `json:"sub" validate:"required"` // of format auth0|ab3sdjas134
+	Nickname      string `json:"nickname"`
+	Name          string `json:"name"`
+	Picture       string `json:"picture"`
+	UpdatedAt     string `json:"updated_at"`
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
 }
 
 // store
@@ -21,8 +29,8 @@ type UserStore interface {
 
 // payloads
 
-type RegisterUserPayload struct {
-	FirstName string `json:"firstName" validate:"required"`
-	LastName  string `json:"lastName" validate:"required"`
-	Email     string `json:"email" validate:"required,email"`
-}
+// type RegisterUserPayload struct {
+// 	FirstName string `json:"firstName" validate:"required"`
+// 	LastName  string `json:"lastName" validate:"required"`
+// 	Email     string `json:"email" validate:"required,email"`
+// }
