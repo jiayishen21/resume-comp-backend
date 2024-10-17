@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jiayishen21/resume-comp-backend/types"
+	"github.com/jiayishen21/resume-comp-backend/utils"
 )
 
 type Store struct {
@@ -13,19 +14,6 @@ type Store struct {
 
 func NewStore(db *sql.DB) *Store {
 	return &Store{db: db}
-}
-
-func scanRowIntoUser(rows *sql.Rows) (*types.User, error) {
-	user := new(types.User)
-	if err := rows.Scan(
-		&user.ID,
-		&user.Email,
-		&user.CreatedAt,
-	); err != nil {
-		return nil, err
-	}
-
-	return user, nil
 }
 
 func (s *Store) UserExists(id string, email string) bool {
@@ -50,7 +38,7 @@ func (s *Store) GetUserByEmail(email string) (*types.User, error) {
 	found := false
 	for rows.Next() {
 		found = true
-		user, err = scanRowIntoUser(rows)
+		user, err = utils.ScanRowIntoUser(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +61,7 @@ func (s *Store) GetUserById(id string) (*types.User, error) {
 	found := false
 	for rows.Next() {
 		found = true
-		user, err = scanRowIntoUser(rows)
+		user, err = utils.ScanRowIntoUser(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -87,6 +75,6 @@ func (s *Store) GetUserById(id string) (*types.User, error) {
 }
 
 func (s *Store) CreateUser(user *types.User) error {
-	_, err := s.db.Exec("INSERT INTO users (id, email) VALUES (?, ?)", user.ID, user.Email)
+	_, err := s.db.Exec("INSERT INTO users (id, email, display_name) VALUES (?, ?, ?)", user.ID, user.Email, user.DisplayName)
 	return err
 }

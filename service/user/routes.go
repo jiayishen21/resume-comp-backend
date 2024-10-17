@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
@@ -94,9 +95,16 @@ func (h *Handler) handleCreateUserIfNotExists(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	adjectives := []string{"Swift", "Brave", "Clever", "Mighty", "Gentle", "Fierce", "Curious"}
+	animals := []string{"Tiger", "Panda", "Eagle", "Elephant", "Fox", "Dolphin", "Lion"}
+	randomAdjective := adjectives[rand.Intn(len(adjectives))]
+	randomAnimal := animals[rand.Intn(len(animals))]
+	displayName := fmt.Sprintf("%s %s", randomAdjective, randomAnimal)
+
 	err = h.store.CreateUser(&types.User{
-		ID:    userInfo.Sub,
-		Email: userInfo.Email,
+		ID:          userInfo.Sub,
+		Email:       userInfo.Email,
+		DisplayName: displayName,
 	})
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)

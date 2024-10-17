@@ -1,10 +1,23 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 type User struct {
-	ID        string    `json:"id"`
-	Email     string    `json:"email"`
+	ID          string `json:"id"`
+	Email       string `json:"email"`
+	DisplayName string `json:"displayName"`
+
+	Private bool `json:"private"`
+
+	Company  string `json:"company"`
+	Position string `json:"position"`
+
+	Country string `json:"country"`
+	State   string `json:"state"`
+	City    string `json:"city"`
+
 	CreatedAt time.Time `json:"createdAt"`
 }
 
