@@ -2,10 +2,14 @@ package user
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
+	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
+	auth0Validator "github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/jiayishen21/resume-comp-backend/middleware"
 	"github.com/jiayishen21/resume-comp-backend/types"
 	"github.com/jiayishen21/resume-comp-backend/utils"
 )
@@ -19,11 +23,38 @@ func NewHandler(store types.UserStore) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/user/get", h.handleFetch).Methods(http.MethodPost)
+	// router.HandleFunc("/user/me", h.handleFetch).Methods(http.MethodPost)
+	router.Handle("/user/me", middleware.EnsureValidToken()(
+		http.HandlerFunc(h.handleFetch),
+	)).Methods(http.MethodPost)
+
 	router.HandleFunc("/user/register", h.handleRegister).Methods(http.MethodPost)
 }
 
 func (h *Handler) handleFetch(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value(jwtmiddleware.ContextKey{}).(*auth0Validator.ValidatedClaims)
+	if !ok {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("failed to get claims from context"))
+		return
+	}
+
+	auth0ID := claims.RegisteredClaims.Subject
+	if auth0ID == "" {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("failed to get auth0ID from claims"))
+		return
+	}
+
+	customClaims, ok := claims.CustomClaims.(*middleware.CustomClaims)
+	if !ok {
+		http.Error(w, "Could not extract custom claims", http.StatusUnauthorized)
+		return
+	}
+
+	// Extract email from the custom claims
+	scope := customClaims.Scope
+
+	log.Println(auth0ID, scope)
+
 	utils.WriteJSON(w, http.StatusCreated, nil)
 }
 

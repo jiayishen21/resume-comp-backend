@@ -24,14 +24,14 @@ func TestUserServiceHandlers(t *testing.T) {
 		}
 		marshalled, _ := json.Marshal(payload)
 
-		req, err := http.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(marshalled))
+		req, err := http.NewRequest(http.MethodPost, "/user/register", bytes.NewBuffer(marshalled))
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		rr := httptest.NewRecorder()
 		router := mux.NewRouter()
-		router.HandleFunc("/register", handler.handleRegister)
+		router.HandleFunc("/user/register", handler.handleRegister)
 		router.ServeHTTP(rr, req)
 
 		if rr.Code != http.StatusBadRequest {
@@ -47,14 +47,14 @@ func TestUserServiceHandlers(t *testing.T) {
 		}
 		marshalled, _ := json.Marshal(payload)
 
-		req, err := http.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(marshalled))
+		req, err := http.NewRequest(http.MethodPost, "/user/register", bytes.NewBuffer(marshalled))
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		rr := httptest.NewRecorder()
 		router := mux.NewRouter()
-		router.HandleFunc("/register", handler.handleRegister)
+		router.HandleFunc("/user/register", handler.handleRegister)
 		router.ServeHTTP(rr, req)
 
 		if rr.Code != http.StatusCreated {
