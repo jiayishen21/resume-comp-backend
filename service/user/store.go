@@ -78,3 +78,11 @@ func (s *Store) CreateUser(user *types.User) error {
 	_, err := s.db.Exec("INSERT INTO users (id, email, display_name) VALUES (?, ?, ?)", user.ID, user.Email, user.DisplayName)
 	return err
 }
+
+func (s *Store) UpdateUser(user *types.User) error {
+	_, err := s.db.Exec(
+		"UPDATE users SET display_name = ?, private = ?, company = ?, position = ?, country = ?, state = ?, city = ? WHERE id = ?",
+		user.DisplayName, user.Private, user.Company, user.Position, user.Country, user.State, user.City, user.ID,
+	)
+	return err
+}

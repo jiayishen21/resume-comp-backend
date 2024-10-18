@@ -64,3 +64,67 @@ func ScanRowIntoUser(rows *sql.Rows) (*types.User, error) {
 
 	return user, nil
 }
+
+type SqlEducation struct {
+	ID          int
+	UserID      string
+	Institution string
+	Degree      string
+
+	Field sql.NullString
+	Minor sql.NullString
+	GPA   sql.NullFloat64
+
+	Country sql.NullString
+	State   sql.NullString
+	City    sql.NullString
+
+	Current   bool
+	StartDate sql.NullTime
+	EndDate   sql.NullTime
+}
+
+func ScanRowIntoEducation(rows *sql.Rows) (*types.Education, error) {
+	sqlEducation := new(SqlEducation)
+	if err := rows.Scan(
+		&sqlEducation.ID,
+		&sqlEducation.UserID,
+		&sqlEducation.Institution,
+		&sqlEducation.Degree,
+
+		&sqlEducation.Field,
+		&sqlEducation.Minor,
+		&sqlEducation.GPA,
+
+		&sqlEducation.Country,
+		&sqlEducation.State,
+		&sqlEducation.City,
+
+		&sqlEducation.Current,
+		&sqlEducation.StartDate,
+		&sqlEducation.EndDate,
+	); err != nil {
+		return nil, err
+	}
+
+	education := &types.Education{
+		ID:          sqlEducation.ID,
+		UserID:      sqlEducation.UserID,
+		Institution: sqlEducation.Institution,
+		Degree:      sqlEducation.Degree,
+
+		Field: sqlEducation.Field.String,
+		Minor: sqlEducation.Minor.String,
+		GPA:   sqlEducation.GPA.Float64,
+
+		Country: sqlEducation.Country.String,
+		State:   sqlEducation.State.String,
+		City:    sqlEducation.City.String,
+
+		Current:   sqlEducation.Current,
+		StartDate: sqlEducation.StartDate.Time,
+		EndDate:   sqlEducation.EndDate.Time,
+	}
+
+	return education, nil
+}

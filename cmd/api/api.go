@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/jiayishen21/resume-comp-backend/service/education"
 	"github.com/jiayishen21/resume-comp-backend/service/user"
 )
 
@@ -28,7 +29,11 @@ func (s *APIServer) Run() error {
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)
 
+	educationStore := education.NewStore(s.db)
+	educationHandler := education.NewHandler(educationStore)
+
 	userHandler.RegisterRoutes(subrouter)
+	educationHandler.RegisterRoutes(subrouter)
 
 	log.Println("Started server on", s.addr)
 

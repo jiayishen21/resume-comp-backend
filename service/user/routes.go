@@ -24,17 +24,20 @@ func NewHandler(store types.UserStore) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	// router.HandleFunc("/user/me", h.handleFetch).Methods(http.MethodPost)
 	router.Handle("/user/me", middleware.EnsureValidToken()(
-		http.HandlerFunc(h.handleFetch),
+		http.HandlerFunc(h.handleFetchUser),
 	)).Methods(http.MethodPost)
 
 	router.Handle("/user/register", middleware.EnsureValidToken()(
 		http.HandlerFunc(h.handleCreateUserIfNotExists),
 	)).Methods(http.MethodPost)
+
+	router.Handle("/user/update", middleware.EnsureValidToken()(
+		http.HandlerFunc(h.handleUpdateUser),
+	)).Methods(http.MethodPost)
 }
 
-func (h *Handler) handleFetch(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleFetchUser(w http.ResponseWriter, r *http.Request) {
 	claims, ok := r.Context().Value(jwtmiddleware.ContextKey{}).(*auth0Validator.ValidatedClaims)
 	if !ok {
 		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("failed to get claims from context"))
@@ -112,4 +115,52 @@ func (h *Handler) handleCreateUserIfNotExists(w http.ResponseWriter, r *http.Req
 	}
 
 	utils.WriteJSON(w, http.StatusCreated, nil)
+}
+
+func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
+	var payload types.UpdateUserPayload
+	if err := utils.ParseJSON(r, &payload); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	// validate payload
+	if err := utils.Validate.Struct(payload); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	claims, ok := r.Context().Value(jwtmiddleware.ContextKey{}).(*auth0Validator.ValidatedClaims)
+	if !ok {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("failed to get claims from context"))
+		return
+	}
+
+	auth0ID := claims.RegisteredClaims.Subject
+	if auth0ID == "" {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("failed to get auth0ID from claims"))
+		return
+	}
+
+	user, err := h.store.GetUserById(auth0ID)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	user.DisplayName = payload.DisplayName
+	user.Private = payload.Private
+	user.Company = payload.Company
+	user.Position = payload.Position
+	user.Country = payload.Country
+	user.State = payload.State
+	user.City = payload.City
+
+	err = h.store.UpdateUser(user)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, nil)
 }

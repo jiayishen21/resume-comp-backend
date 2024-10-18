@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS education (
 	`state` VARCHAR(255),
 	`city` VARCHAR(255),
 
-	`current` BOOLEAN NOT NULL DEFAULT FALSE,
+	`current` BOOLEAN NOT NULL,
 	`start_date` DATE,
 	`end_date` DATE,
 
