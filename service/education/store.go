@@ -65,3 +65,39 @@ func (s *Store) AddEducation(education *types.Education) error {
 
 	return err
 }
+
+func (s *Store) UpdateEducation(education *types.Education) error {
+	query := `
+		UPDATE education
+		SET institution = ?, degree = ?, field = ?, minor = ?, gpa = ?, country = ?, state = ?, city = ?, current = ?, start_date = ?, end_date = ?
+		WHERE id = ? AND user_id = ?
+	`
+
+	startDate := utils.TimeToNullTime(education.StartDate)
+	endDate := utils.TimeToNullTime(education.EndDate)
+
+	// Make sure to pass the actual startDate
+	_, err := s.db.Exec(query,
+		education.Institution,
+		education.Degree,
+		education.Field,
+		education.Minor,
+		education.GPA,
+		education.Country,
+		education.State,
+		education.City,
+		education.Current,
+		startDate,
+		endDate,
+		education.ID,
+		education.UserID,
+	)
+
+	return err
+}
+
+func (s *Store) DeleteEducation(id int, userId string) error {
+	query := "DELETE FROM education WHERE id = ? AND user_id = ?"
+	_, err := s.db.Exec(query, id, userId)
+	return err
+}
